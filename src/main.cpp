@@ -1,5 +1,4 @@
 /**
- *
  * This software allows to manage the led strip (not addressable) via PWM signals. Specifically, get the RGB values via Bluetooth from
  *  an Android App and write them on PWN port.
  *
@@ -15,20 +14,36 @@
  */
 
 #include <Arduino.h>
-#include <Screen.h>
+#include <BluetoothSerial.h>
 
 #include "configMain.h"
 
-/* Creating the objects to manage the OLED screen on front panel. */
-U8G2_SSD1306_128X64_NONAME_F_HW_I2C screen(U8G2_R0, pinSCL, pinSDA);
-MainPage mainPage(&screen);
+BluetoothSerial bluetoothSerial;
+
+const byte idDeviceSize = 15;
+const byte rgbValuesSize = 3;
+
+char idDevice[idDeviceSize];
+byte rgbValues[rgbValuesSize];
 
 void setup() {
     Serial.begin(baudRate);
-    screen.begin();
+
+    uint64_t chipID = ESP.getEfuseMac();
+
+    snprintf(idDevice, idDeviceSize, "%08X", (uint32_t) chipID);
+    bluetoothSerial.begin("LumenIO-" + String(idDevice));
 }
 
 void loop() {
-    // TODO: Copy here the Bluetooth connection and read.
-    mainPage.show();
+    if (bluetoothSerial.available()) {
+        bluetoothSerial.readBytes(rgbValues, rgbValuesSize);
+        Serial.println(rgbValues[0]);
+        Serial.println(rgbValues[1]);
+        Serial.println(rgbValues[2]);
+
+        analogWrite(pinLedRed, rgbValues[0]);
+        analogWrite(pinLedGreen, rgbValues[1]);
+        analogWrite(pinLedBlue, rgbValues[2]);
+    }
 }

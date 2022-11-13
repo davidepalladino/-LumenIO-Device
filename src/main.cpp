@@ -9,12 +9,13 @@
  * @contact davidepalladino@hotmail.com
  * @website https://davidepalladino.github.io/
  * @version 2.0.0
- * @date 10th November, 2022
+ * @date 13th November, 2022
  *
  */
 
 #include <Arduino.h>
 #include <BluetoothSerial.h>
+#include <EEPROM.h>
 
 #include "configMain.h"
 
@@ -24,10 +25,21 @@ const byte idDeviceSize = 15;
 const byte rgbValuesSize = 3;
 
 char idDevice[idDeviceSize];
-byte rgbValues[rgbValuesSize];
+byte rgbValuesRead[rgbValuesSize];
+byte rgbValuesEEPROM[rgbValuesSize];
+
+unsigned long timeoutSaveEEPROM = 0;
 
 void setup() {
-    Serial.begin(baudRate);
+//    Serial.begin(BAUDRATE_SERIAL);
+
+    EEPROM.begin(SIZE_EEPROM);
+    EEPROM.get(ADDRESS_MANUAL_EEPROM, rgbValuesEEPROM);
+    EEPROM.end();
+
+    rgbValuesRead[0] = rgbValuesEEPROM[0];
+    rgbValuesRead[1] = rgbValuesEEPROM[1];
+    rgbValuesRead[2] = rgbValuesEEPROM[2];
 
     uint64_t chipID = ESP.getEfuseMac();
 
@@ -37,13 +49,34 @@ void setup() {
 
 void loop() {
     if (bluetoothSerial.available()) {
-        bluetoothSerial.readBytes(rgbValues, rgbValuesSize);
-        Serial.println(rgbValues[0]);
-        Serial.println(rgbValues[1]);
-        Serial.println(rgbValues[2]);
+        bluetoothSerial.readBytes(rgbValuesRead, rgbValuesSize);
 
-        analogWrite(pinLedRed, rgbValues[0]);
-        analogWrite(pinLedGreen, rgbValues[1]);
-        analogWrite(pinLedBlue, rgbValues[2]);
+//        Serial.println(rgbValuesRead[0]);
+//        Serial.println(rgbValuesRead[1]);
+//        Serial.println(rgbValuesRead[2]);
+
+        analogWrite(PIN_RED_LED, rgbValuesRead[0]);
+        analogWrite(PIN_GREEN_LED, rgbValuesRead[1]);
+        analogWrite(PIN_BLUE_LED, rgbValuesRead[2]);
+
+        if (
+                ((rgbValuesRead[0] != rgbValuesEEPROM[0]) || (rgbValuesRead[1] != rgbValuesEEPROM[1]) || (rgbValuesRead[2] != rgbValuesEEPROM[2])) &&
+                ((rgbValuesRead[0] != 0) && (rgbValuesRead[1] != 0) && (rgbValuesRead[2] != 0))
+        ) {
+            rgbValuesEEPROM[0] = rgbValuesRead[0];
+            rgbValuesEEPROM[1] = rgbValuesRead[1];
+            rgbValuesEEPROM[2] = rgbValuesRead[2];
+
+            timeoutSaveEEPROM = millis() + TIME_SAVE_EEPROM;
+        }
+
+        if ((timeoutSaveEEPROM < millis()) && (timeoutSaveEEPROM != 0)) {
+            timeoutSaveEEPROM = 0;
+
+            EEPROM.begin(SIZE_EEPROM);
+            EEPROM.put(ADDRESS_MANUAL_EEPROM, rgbValuesEEPROM);
+            EEPROM.commit();
+            EEPROM.end();
+        }
     }
 }

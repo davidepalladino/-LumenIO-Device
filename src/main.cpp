@@ -33,18 +33,25 @@ unsigned long timeoutSaveEEPROM = 0;
 void setup() {
 //    Serial.begin(BAUDRATE_SERIAL);
 
+    uint64_t chipID = ESP.getEfuseMac();
+    snprintf(idDevice, idDeviceSize, "%08X", (uint32_t) chipID);
+    bluetoothSerial.begin("LumenIO-" + String(idDevice));
+
     EEPROM.begin(SIZE_EEPROM);
-    EEPROM.get(ADDRESS_MANUAL_EEPROM, rgbValuesEEPROM);
+    EEPROM.readBytes(ADDRESS_MANUAL_EEPROM, rgbValuesEEPROM, rgbValuesSize);
     EEPROM.end();
 
     rgbValuesRead[0] = rgbValuesEEPROM[0];
     rgbValuesRead[1] = rgbValuesEEPROM[1];
     rgbValuesRead[2] = rgbValuesEEPROM[2];
 
-    uint64_t chipID = ESP.getEfuseMac();
+//    Serial.println(rgbValuesRead[0]);
+//    Serial.println(rgbValuesRead[1]);
+//    Serial.println(rgbValuesRead[2]);
 
-    snprintf(idDevice, idDeviceSize, "%08X", (uint32_t) chipID);
-    bluetoothSerial.begin("LumenIO-" + String(idDevice));
+    analogWrite(PIN_RED_LED, rgbValuesRead[0]);
+    analogWrite(PIN_GREEN_LED, rgbValuesRead[1]);
+    analogWrite(PIN_BLUE_LED, rgbValuesRead[2]);
 }
 
 void loop() {
@@ -61,7 +68,7 @@ void loop() {
 
         if (
                 ((rgbValuesRead[0] != rgbValuesEEPROM[0]) || (rgbValuesRead[1] != rgbValuesEEPROM[1]) || (rgbValuesRead[2] != rgbValuesEEPROM[2])) &&
-                ((rgbValuesRead[0] != 0) && (rgbValuesRead[1] != 0) && (rgbValuesRead[2] != 0))
+                ((rgbValuesRead[0] != 0) || (rgbValuesRead[1] != 0) || (rgbValuesRead[2] != 0))
         ) {
             rgbValuesEEPROM[0] = rgbValuesRead[0];
             rgbValuesEEPROM[1] = rgbValuesRead[1];
@@ -69,14 +76,14 @@ void loop() {
 
             timeoutSaveEEPROM = millis() + TIME_SAVE_EEPROM;
         }
+    }
 
-        if ((timeoutSaveEEPROM < millis()) && (timeoutSaveEEPROM != 0)) {
-            timeoutSaveEEPROM = 0;
+    if ((timeoutSaveEEPROM < millis()) && (timeoutSaveEEPROM != 0)) {
+        timeoutSaveEEPROM = 0;
 
-            EEPROM.begin(SIZE_EEPROM);
-            EEPROM.put(ADDRESS_MANUAL_EEPROM, rgbValuesEEPROM);
-            EEPROM.commit();
-            EEPROM.end();
-        }
+        EEPROM.begin(SIZE_EEPROM);
+        EEPROM.writeBytes(ADDRESS_MANUAL_EEPROM, rgbValuesEEPROM, rgbValuesSize);
+        EEPROM.commit();
+        EEPROM.end();
     }
 }

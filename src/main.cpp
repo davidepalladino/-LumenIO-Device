@@ -31,6 +31,7 @@ byte rgbValuesEEPROM[rgbValuesSize];
 unsigned long timeoutSaveEEPROM = 0;
 
 void setup() {
+    // For DEBUG
 //    Serial.begin(BAUDRATE_SERIAL);
 
     uint64_t chipID = ESP.getEfuseMac();
@@ -45,6 +46,7 @@ void setup() {
     rgbValuesRead[1] = rgbValuesEEPROM[1];
     rgbValuesRead[2] = rgbValuesEEPROM[2];
 
+    // For DEBUG
 //    Serial.println(rgbValuesRead[0]);
 //    Serial.println(rgbValuesRead[1]);
 //    Serial.println(rgbValuesRead[2]);
@@ -58,6 +60,7 @@ void loop() {
     if (bluetoothSerial.available()) {
         bluetoothSerial.readBytes(rgbValuesRead, rgbValuesSize);
 
+    // For DEBUG
 //        Serial.println(rgbValuesRead[0]);
 //        Serial.println(rgbValuesRead[1]);
 //        Serial.println(rgbValuesRead[2]);

@@ -17,7 +17,7 @@
 #include <BluetoothSerial.h>
 #include <EEPROM.h>
 
-#include "configMain.h"
+#include "config.h"
 
 BluetoothSerial bluetoothSerial;
 

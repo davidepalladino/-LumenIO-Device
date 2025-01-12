@@ -2,14 +2,14 @@
  * This software allows to manage the led strip (not addressable) via PWM signals. Specifically, get the RGB values via Bluetooth from
  *  an Android App and write them on PWN port.
  *
- * Copyright (c) 2022 Davide Palladino.
+ * Copyright (c) 2024 Davide Palladino.
  * All right reserved.
  *
  * @author Davide Palladino
  * @contact davidepalladino@hotmail.com
  * @website https://davidepalladino.github.io/
- * @version 2.0.0
- * @date 13th November, 2022
+ * @version 2.1.0
+ * @date 12th January 2025
  *
  */
 
@@ -31,8 +31,9 @@ byte rgbValuesEEPROM[rgbValuesSize];
 unsigned long timeoutSaveEEPROM = 0;
 
 void setup() {
-    // For DEBUG
-//    Serial.begin(BAUDRATE_SERIAL);
+    #if DEBUG
+    Serial.begin(BAUDRATE_SERIAL);
+    #endif
 
     uint64_t chipID = ESP.getEfuseMac();
     snprintf(idDevice, idDeviceSize, "%08X", (uint32_t) chipID);
@@ -46,10 +47,13 @@ void setup() {
     rgbValuesRead[1] = rgbValuesEEPROM[1];
     rgbValuesRead[2] = rgbValuesEEPROM[2];
 
-    // For DEBUG
-//    Serial.println(rgbValuesRead[0]);
-//    Serial.println(rgbValuesRead[1]);
-//    Serial.println(rgbValuesRead[2]);
+    #if DEBUG
+    Serial.println("\033[1;36m----- [PACKETS] -----\033[0m");
+    Serial.printf("\033[1;91m%u\033[0m\n", rgbValuesRead[0]);
+    Serial.printf("\033[1;92m%u\033[0m\n", rgbValuesRead[1]);
+    Serial.printf("\033[1;94m%u\033[0m\n", rgbValuesRead[2]);
+    Serial.println("\033[1;36m---------------------\033[0m");
+    #endif
 
     analogWrite(PIN_RED_LED, rgbValuesRead[0]);
     analogWrite(PIN_GREEN_LED, rgbValuesRead[1]);
@@ -60,10 +64,13 @@ void loop() {
     if (bluetoothSerial.available()) {
         bluetoothSerial.readBytes(rgbValuesRead, rgbValuesSize);
 
-    // For DEBUG
-//        Serial.println(rgbValuesRead[0]);
-//        Serial.println(rgbValuesRead[1]);
-//        Serial.println(rgbValuesRead[2]);
+        #ifdef DEBUG
+        Serial.println("\033[1;36m----- [PACKETS] -----\033[0m");
+        Serial.printf("\033[1;91m%u\033[0m\n", rgbValuesRead[0]);
+        Serial.printf("\033[1;92m%u\033[0m\n", rgbValuesRead[1]);
+        Serial.printf("\033[1;94m%u\033[0m\n", rgbValuesRead[2]);
+        Serial.println("\033[1;36m---------------------\033[0m");
+        #endif
 
         analogWrite(PIN_RED_LED, rgbValuesRead[0]);
         analogWrite(PIN_GREEN_LED, rgbValuesRead[1]);

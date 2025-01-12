@@ -1,3 +1,6 @@
+#pragma once
+#define DEBUG 0           // Be careful! Make the MCU slower. Use it only when is necessary.
+
 // LED strip
 const uint8_t PIN_RED_LED =                         16;
 const uint8_t PIN_GREEN_LED =                       15;

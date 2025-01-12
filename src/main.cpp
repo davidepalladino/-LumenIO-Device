@@ -48,7 +48,7 @@ void setup() {
     bluetoothSerial.begin("LumenIO-" + String(idDevice));
 
     EEPROM.begin(SIZE_EEPROM);
-    EEPROM.readBytes(ADDRESS_MANUAL_EEPROM, rgbValuesEEPROM, rgbValuesSize);
+    EEPROM.readBytes(ADDRESS_RGB_VALUES_EEPROM, rgbValuesEEPROM, rgbValuesSize);
     EEPROM.end();
 
     rgbValuesRead[0] = rgbValuesEEPROM[0];
@@ -106,7 +106,7 @@ void loop() {
         timeoutSaveEEPROM = 0;
 
         EEPROM.begin(SIZE_EEPROM);
-        EEPROM.writeBytes(ADDRESS_MANUAL_EEPROM, rgbValuesEEPROM, rgbValuesSize);
+        EEPROM.writeBytes(ADDRESS_RGB_VALUES_EEPROM, rgbValuesEEPROM, rgbValuesSize);
         EEPROM.commit();
         EEPROM.end();
     }

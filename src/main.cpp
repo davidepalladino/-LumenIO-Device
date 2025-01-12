@@ -37,6 +37,8 @@ void setup() {
     // Disabling brownout detector
     WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
 
+    pinMode(LED_BUILTIN, OUTPUT);
+
     #if DEBUG
     Serial.begin(BAUDRATE_SERIAL);
     #endif
@@ -67,6 +69,12 @@ void setup() {
 }
 
 void loop() {
+    if (bluetoothSerial.connected()) {
+        digitalWrite(LED_BUILTIN, HIGH);
+    } else {
+        digitalWrite(LED_BUILTIN, LOW);
+    }
+
     if (bluetoothSerial.available()) {
         bluetoothSerial.readBytes(rgbValuesRead, rgbValuesSize);
 

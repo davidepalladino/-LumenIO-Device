@@ -17,6 +17,9 @@
 #include <BluetoothSerial.h>
 #include <EEPROM.h>
 
+#include "soc/soc.h"
+#include "soc/rtc_cntl_reg.h"
+
 #include "config.h"
 
 BluetoothSerial bluetoothSerial;
@@ -31,6 +34,9 @@ byte rgbValuesEEPROM[rgbValuesSize];
 unsigned long timeoutSaveEEPROM = 0;
 
 void setup() {
+    // Disabling brownout detector
+    WRITE_PERI_REG(RTC_CNTL_BROWN_OUT_REG, 0);
+
     #if DEBUG
     Serial.begin(BAUDRATE_SERIAL);
     #endif
